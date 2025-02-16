@@ -14,6 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { ImagePlus, Download } from "lucide-react";
+import { useState } from "react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -27,6 +29,8 @@ const formSchema = z.object({
 });
 
 const CreateReport = () => {
+  const [images, setImages] = useState<string[]>([]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,14 +45,52 @@ const CreateReport = () => {
     },
   });
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    // Convert FileList to Array and process each file
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target?.result) {
+            setImages((prev) => [...prev, e.target!.result as string]);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        toast.error("Please upload only image files");
+      }
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   function onSubmit(values: z.infer<typeof formSchema>) {
+    // Here you would typically generate the PDF report
+    // For now, we'll just show a success message
     toast.success("Report created successfully!");
-    console.log(values);
+    console.log({ ...values, images });
   }
+
+  const downloadReport = () => {
+    // Here you would implement the PDF generation logic
+    toast.success("Report downloaded successfully!");
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Create New Report</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Create New Report</h1>
+        <Button onClick={downloadReport} variant="outline" className="gap-2">
+          <Download className="h-4 w-4" />
+          Download Report
+        </Button>
+      </div>
+      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -169,6 +211,40 @@ const CreateReport = () => {
               </FormItem>
             )}
           />
+
+          <div className="space-y-4">
+            <FormLabel>Images</FormLabel>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {images.map((image, index) => (
+                <div key={index} className="relative group">
+                  <img
+                    src={image}
+                    alt={`Uploaded image ${index + 1}`}
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 h-32 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
+                <ImagePlus className="h-8 w-8 text-gray-400" />
+                <span className="mt-2 text-sm text-gray-500">Add Images</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
           <Button type="submit" className="w-full">
             Create Report
           </Button>
