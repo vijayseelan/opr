@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ interface Report {
   impact: string;
   summary: string;
   images: string[] | null;
+  user_id: string;
 }
 
 const AllReports = () => {
@@ -30,12 +32,18 @@ const AllReports = () => {
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["reports"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from("reports")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        toast.error("Failed to fetch reports");
+        throw error;
+      }
       return data as Report[];
     },
   });
@@ -112,10 +120,16 @@ const AllReports = () => {
 
   const duplicateReport = async (report: Report) => {
     try {
-      const { id, created_at, ...reportData } = report as any;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to duplicate reports");
+        return;
+      }
+
+      const { id, created_at, user_id, ...reportData } = report;
       const { error } = await supabase
         .from("reports")
-        .insert([{ ...reportData, title: `${reportData.title} (Copy)` }]);
+        .insert([{ ...reportData, title: `${reportData.title} (Copy)`, user_id: user.id }]);
 
       if (error) throw error;
 
