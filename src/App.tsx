@@ -9,6 +9,9 @@ import Dashboard from "./pages/Dashboard";
 import CreateReport from "./pages/CreateReport";
 import AllReports from "./pages/AllReports";
 import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
 
 const queryClient = new QueryClient();
 
@@ -19,8 +22,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
           <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="create-report" element={<CreateReport />} />
             <Route path="all-reports" element={<AllReports />} />
             <Route path="*" element={<NotFound />} />
