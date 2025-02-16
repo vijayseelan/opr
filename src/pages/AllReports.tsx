@@ -23,6 +23,7 @@ interface Report {
   summary: string;
   images: string[] | null;
   user_id: string;
+  created_at: string;  // Added this field to match the database schema
 }
 
 const AllReports = () => {
