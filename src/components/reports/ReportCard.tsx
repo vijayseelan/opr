@@ -1,5 +1,5 @@
 
-import { FileText, Trash2 } from "lucide-react";
+import { FileText, Trash } from "lucide-react";
 import { format } from "date-fns";
 import { Report } from "@/types/report";
 import { BentoCard } from "@/components/ui/bento-card";
@@ -52,7 +52,7 @@ export const ReportCard = ({ report, onClick, onDelete }: ReportCardProps) => {
         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
         onClick={handleDelete}
       >
-        <Trash2 className="h-4 w-4" />
+        <Trash className="h-4 w-4" />
       </Button>
     </div>
   );
