@@ -5,9 +5,49 @@ import { Link } from "react-router-dom";
 import { useReports } from "@/hooks/useReports";
 import { format } from "date-fns";
 import InteractiveBentoGallery from "@/components/ui/interactive-bento-gallery";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Report } from "@/types/report";
 
 const Dashboard = () => {
-  const { reports, isLoading } = useReports();
+  const { reports: initialReports, isLoading } = useReports();
+  const [reports, setReports] = useState<Report[]>(initialReports);
+
+  useEffect(() => {
+    setReports(initialReports);
+  }, [initialReports]);
+
+  // Subscribe to real-time changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('reports-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (insert, update, delete)
+          schema: 'public',
+          table: 'reports'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            setReports(prev => [payload.new as Report, ...prev]);
+          } else if (payload.eventType === 'DELETE') {
+            setReports(prev => prev.filter(report => report.id !== payload.old.id));
+          } else if (payload.eventType === 'UPDATE') {
+            setReports(prev => prev.map(report => 
+              report.id === payload.new.id ? payload.new as Report : report
+            ));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // Calculate statistics
   const totalReports = reports.length;
