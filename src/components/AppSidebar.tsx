@@ -35,38 +35,40 @@ export function AppSidebar() {
   };
 
   return (
-    <aside className="pb-12 min-h-screen flex flex-col">
-      <div className="space-y-4 py-4 flex-1">
-        <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-            Menu
-          </h2>
-          <div className="space-y-1">
-            {links.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                to={href}
-                className={cn(
-                  "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors",
-                  isActive(href) ? "bg-accent" : "transparent"
-                )}
-              >
-                <Icon className="mr-2 h-4 w-4" />
-                {label}
-              </Link>
-            ))}
+    <aside className="fixed left-0 top-0 z-30 h-screen w-64 border-r bg-background">
+      <div className="flex h-full flex-col justify-between">
+        <div className="space-y-4 py-4">
+          <div className="px-3 py-2">
+            <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+              Menu
+            </h2>
+            <div className="space-y-1">
+              {links.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  to={href}
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors",
+                    isActive(href) ? "bg-accent" : "transparent"
+                  )}
+                >
+                  <Icon className="mr-2 h-4 w-4" />
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="px-3 py-2">
-        <Button
-          variant="ghost"
-          className="w-full flex items-center justify-start px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-          onClick={handleSignOut}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign Out
-        </Button>
+        <div className="sticky bottom-0 border-t bg-background p-3">
+          <Button
+            variant="ghost"
+            className="w-full flex items-center justify-start px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+            onClick={handleSignOut}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
       </div>
     </aside>
   );
