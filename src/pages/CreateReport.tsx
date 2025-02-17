@@ -143,6 +143,9 @@ const CreateReport = () => {
       if (report.images) {
         setImages(report.images);
       }
+      if (report.language) {
+        setLanguage(report.language);
+      }
     }
   }, [report, form]);
 
@@ -179,19 +182,10 @@ const CreateReport = () => {
       }
 
       const reportData: Omit<Report, 'id' | 'created_at'> = {
-        title: values.title,
-        date: values.date,
-        time: values.time,
-        venue: values.venue,
-        organizer: values.organizer,
-        attendance: values.attendance,
-        impact: values.impact,
-        summary: values.summary,
-        images: images,
+        ...values,
+        images,
         user_id: user.id,
-        teacher_name: values.teacher_name,
-        teacher_designation: values.teacher_designation,
-        language: language,
+        language,
       };
 
       if (isEditing) {
@@ -341,10 +335,6 @@ const CreateReport = () => {
     }
   };
 
-  const handleLanguageChange = (value: 'en' | 'my') => {
-    setLanguage(value);
-  };
-
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {templateSettings && (
@@ -378,7 +368,7 @@ const CreateReport = () => {
         <div className="flex gap-4">
           <Select
             value={language}
-            onValueChange={(value: 'en' | 'my') => handleLanguageChange(value)}
+            onValueChange={(value: 'en' | 'my') => setLanguage(value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select Language" />

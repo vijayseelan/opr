@@ -17,6 +17,7 @@ export type Database = {
           id: string
           images: string[] | null
           impact: string
+          language: string | null
           organizer: string
           summary: string
           teacher_designation: string
@@ -33,6 +34,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           impact: string
+          language?: string | null
           organizer: string
           summary: string
           teacher_designation: string
@@ -49,6 +51,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           impact?: string
+          language?: string | null
           organizer?: string
           summary?: string
           teacher_designation?: string
