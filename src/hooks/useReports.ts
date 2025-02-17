@@ -1,9 +1,11 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import html2pdf from "html2pdf.js";
 import { Report } from "@/types/report";
+
+const REPORTS_PER_PAGE = 9;
 
 interface ProcessedImage {
   url: string;
@@ -12,24 +14,43 @@ interface ProcessedImage {
 }
 
 export const useReports = () => {
-  const { data: reports = [], isLoading } = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading
+  } = useInfiniteQuery({
     queryKey: ["reports"],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 0 }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase
+      const from = pageParam * REPORTS_PER_PAGE;
+      const to = from + REPORTS_PER_PAGE - 1;
+
+      const { data, error, count } = await supabase
         .from("reports")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("*", { count: 'exact' })
+        .order("created_at", { ascending: false })
+        .range(from, to);
 
       if (error) {
         toast.error("Failed to fetch reports");
         throw error;
       }
-      return data as Report[];
+
+      return {
+        reports: data as Report[],
+        nextPage: to < (count || 0) - 1 ? pageParam + 1 : undefined,
+      };
     },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
   });
+
+  // Flatten the pages array to get all reports
+  const reports = data?.pages.flatMap(page => page.reports) || [];
 
   const processImage = (url: string): Promise<ProcessedImage> => {
     return new Promise((resolve) => {
@@ -48,7 +69,8 @@ export const useReports = () => {
           aspectRatio: 16/9,
         });
       };
-      img.src = url;
+      // Add a cache breaker to force browser to load a fresh copy
+      img.src = `${url}?${new Date().getTime()}`;
     });
   };
 
@@ -226,6 +248,9 @@ export const useReports = () => {
   return {
     reports,
     isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     downloadReport,
     duplicateReport,
   };

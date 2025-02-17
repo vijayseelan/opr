@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -14,11 +14,39 @@ const AllReports = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const navigate = useNavigate();
-  const { reports, isLoading, downloadReport, duplicateReport } = useReports();
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  const {
+    reports,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    downloadReport,
+    duplicateReport
+  } = useReports();
 
   const filteredReports = reports.filter((report) =>
     report.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const handleEditReport = (reportId: string) => {
     setSelectedReport(null);
@@ -71,6 +99,20 @@ const AllReports = () => {
           />
         ))}
       </div>
+
+      {/* Infinite scroll observer */}
+      {hasNextPage && (
+        <div
+          ref={observerTarget}
+          className="flex justify-center p-4"
+        >
+          {isFetchingNextPage ? (
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+          ) : (
+            <div className="h-8" /> // Spacer
+          )}
+        </div>
+      )}
 
       {selectedReport && (
         <ReportDetail
