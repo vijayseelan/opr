@@ -10,6 +10,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -53,7 +55,8 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar className="flex flex-col h-full">
+    <Sidebar variant="sidebar" collapsible="offcanvas">
+      <SidebarRail />
       <SidebarContent className="flex-1">
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
@@ -64,6 +67,7 @@ const AppSidebar = () => {
                   <SidebarMenuButton
                     className={location.pathname === item.url ? "bg-accent" : ""}
                     asChild
+                    tooltip={item.title}
                   >
                     <Link to={item.url} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
@@ -81,6 +85,7 @@ const AppSidebar = () => {
         <SidebarMenuButton
           onClick={handleSignOut}
           className="w-full text-red-500 hover:text-red-600"
+          tooltip="Sign Out"
         >
           <div className="flex items-center gap-2">
             <LogOut className="h-4 w-4" />
