@@ -5,6 +5,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface ProcessedImage {
+  url: string;
+  isPortrait: boolean;
+  aspectRatio: number;
+}
+
 interface ReportPreviewProps {
   report: Report;
   isOpen: boolean;
@@ -13,10 +19,37 @@ interface ReportPreviewProps {
 
 export const ReportPreview = ({ report, isOpen, onClose }: ReportPreviewProps) => {
   const [previewHtml, setPreviewHtml] = useState<string>("");
+  const [processedImages, setProcessedImages] = useState<ProcessedImage[]>([]);
+
+  const processImage = (url: string): Promise<ProcessedImage> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve({
+          url,
+          isPortrait: img.naturalHeight > img.naturalWidth,
+          aspectRatio: img.naturalWidth / img.naturalHeight,
+        });
+      };
+      img.onerror = () => {
+        resolve({
+          url,
+          isPortrait: false,
+          aspectRatio: 16/9, // default aspect ratio if image fails to load
+        });
+      };
+      img.src = url;
+    });
+  };
 
   useEffect(() => {
     const generatePreview = async () => {
       try {
+        if (report.images?.length) {
+          const processed = await Promise.all(report.images.map(processImage));
+          setProcessedImages(processed);
+        }
+
         const { data: templateSettings } = await supabase
           .from("template_settings")
           .select("*")
@@ -39,6 +72,33 @@ export const ReportPreview = ({ report, isOpen, onClose }: ReportPreviewProps) =
             ${templateSettings.additional_logos?.length ? `
               <img src="${templateSettings.additional_logos[0]}" alt="Additional Logo" style="height: 80px; object-fit: contain;" />
             ` : '<div style="width: 80px;"></div>'}
+          </div>
+        ` : '';
+
+        const imagesHtml = report.images?.length ? `
+          <div style="margin-top: 30px; margin-bottom: 30px;">
+            <h2 style="font-size: 18px; margin-bottom: 15px; color: #1a1f2c;">Event Photos</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+              ${processedImages.map((image, index) => {
+                if (image.isPortrait) {
+                  // Portrait images get less width but more height
+                  return `
+                    <div style="width: 50%; margin: 0 auto;">
+                      <img src="${image.url}" 
+                           style="width: 100%; max-height: 600px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+                    </div>
+                  `;
+                } else {
+                  // Landscape images get full width
+                  return `
+                    <div style="width: 100%;">
+                      <img src="${image.url}" 
+                           style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+                    </div>
+                  `;
+                }
+              }).join('')}
+            </div>
           </div>
         ` : '';
 
@@ -79,18 +139,7 @@ export const ReportPreview = ({ report, isOpen, onClose }: ReportPreviewProps) =
               </tr>
             </table>
             
-            ${report.images?.length ? `
-              <div style="margin-top: 30px; margin-bottom: 30px;">
-                <h2 style="font-size: 18px; margin-bottom: 15px; color: #1a1f2c;">Event Photos</h2>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
-                  ${report.images.map(image => `
-                    <div style="border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                      <img src="${image}" style="width: 100%; height: 200px; object-fit: cover;" />
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            ` : ''}
+            ${imagesHtml}
 
             <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #ddd;">
               <div style="text-align: right;">
