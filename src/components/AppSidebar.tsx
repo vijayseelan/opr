@@ -1,12 +1,12 @@
 
-import { LayoutDashboard, FileEdit, Files, LogOut } from "lucide-react";
+import { LayoutDashboard, FileEdit, Files, Settings, LogOut } from "lucide-react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -29,6 +29,11 @@ const items = [
     title: "All Reports",
     url: "/all-reports",
     icon: Files,
+  },
+  {
+    title: "Template Settings",
+    url: "/template-settings",
+    icon: Settings,
   },
 ];
 

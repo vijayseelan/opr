@@ -12,4 +12,6 @@ export interface Report {
   images: string[] | null;
   user_id: string;
   created_at: string;
+  teacher_name: string;
+  teacher_designation: string;
 }
