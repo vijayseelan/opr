@@ -1,4 +1,3 @@
-
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -26,9 +25,9 @@ export const useReports = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading
-  } = useInfiniteQuery<PageData, Error, PageData, [string], number>({
+  } = useInfiniteQuery({
     queryKey: ["reports"],
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam = 0 }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
@@ -58,8 +57,8 @@ export const useReports = () => {
     initialPageParam: 0,
   });
 
-  // Safely flatten the pages array to get all reports
-  const reports = data?.pages.flatMap(page => page.reports) || [];
+  // Now TypeScript knows that data is an InfiniteData<PageData> type
+  const reports = data?.pages?.flatMap(page => page.reports) || [];
 
   const processImage = (url: string): Promise<ProcessedImage> => {
     return new Promise((resolve) => {
