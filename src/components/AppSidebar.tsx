@@ -48,8 +48,8 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar>
-      <SidebarContent>
+    <Sidebar className="flex flex-col h-full">
+      <SidebarContent className="flex-1">
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -67,22 +67,22 @@ const AppSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={handleSignOut}
-                  className="w-full text-red-500 hover:text-red-600"
-                >
-                  <div className="flex items-center gap-2">
-                    <LogOut className="h-4 w-4" />
-                    <span>Sign Out</span>
-                  </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <div className="p-4 border-t border-sidebar-border">
+        <SidebarMenuButton
+          onClick={handleSignOut}
+          className="w-full text-red-500 hover:text-red-600"
+        >
+          <div className="flex items-center gap-2">
+            <LogOut className="h-4 w-4" />
+            <span>Sign Out</span>
+          </div>
+        </SidebarMenuButton>
+      </div>
     </Sidebar>
   );
 };
