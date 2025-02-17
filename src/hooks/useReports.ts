@@ -1,5 +1,5 @@
 
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import html2pdf from "html2pdf.js";
@@ -13,6 +13,12 @@ interface ProcessedImage {
   aspectRatio: number;
 }
 
+interface PageData {
+  reports: Report[];
+  nextPage: number | undefined;
+  totalCount: number;
+}
+
 export const useReports = () => {
   const {
     data,
@@ -20,7 +26,7 @@ export const useReports = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<PageData>({
     queryKey: ["reports"],
     queryFn: async ({ pageParam = 0 }) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -40,16 +46,19 @@ export const useReports = () => {
         throw error;
       }
 
+      const totalCount = count || 0;
+
       return {
         reports: data as Report[],
-        nextPage: to < (count || 0) - 1 ? pageParam + 1 : undefined,
+        nextPage: to < totalCount - 1 ? pageParam + 1 : undefined,
+        totalCount,
       };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
   });
 
-  // Flatten the pages array to get all reports
+  // Safely flatten the pages array to get all reports
   const reports = data?.pages.flatMap(page => page.reports) || [];
 
   const processImage = (url: string): Promise<ProcessedImage> => {
