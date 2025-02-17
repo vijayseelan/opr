@@ -26,14 +26,14 @@ export const useReports = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading
-  } = useInfiniteQuery<PageData>({
+  } = useInfiniteQuery<PageData, Error, PageData, [string], number>({
     queryKey: ["reports"],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const from = pageParam * REPORTS_PER_PAGE;
-      const to = from + REPORTS_PER_PAGE - 1;
+      const from: number = pageParam * REPORTS_PER_PAGE;
+      const to: number = from + REPORTS_PER_PAGE - 1;
 
       const { data, error, count } = await supabase
         .from("reports")
@@ -54,7 +54,7 @@ export const useReports = () => {
         totalCount,
       };
     },
-    getNextPageParam: (lastPage) => lastPage.nextPage,
+    getNextPageParam: (lastPage: PageData): number | undefined => lastPage.nextPage,
     initialPageParam: 0,
   });
 
