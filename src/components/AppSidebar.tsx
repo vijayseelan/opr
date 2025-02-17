@@ -10,7 +10,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,7 +54,11 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar variant="sidebar" collapsible="offcanvas" className="bg-white md:bg-sidebar">
+    <Sidebar 
+      variant="sidebar" 
+      collapsible="offcanvas" 
+      className="!bg-white shadow-lg md:shadow-none md:!bg-sidebar"
+    >
       <SidebarRail />
       <SidebarContent className="flex-1">
         <SidebarGroup>

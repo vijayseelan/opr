@@ -1,4 +1,3 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -188,7 +187,6 @@ const CreateReport = () => {
         return;
       }
 
-      // Create a properly typed report data object
       const reportData: Omit<Report, 'id' | 'created_at'> = {
         title: values.title,
         date: values.date,
@@ -353,41 +351,41 @@ const CreateReport = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 px-4 md:px-0">
       {templateSettings && (
-        <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
-          <div className="flex justify-between items-center gap-4">
+        <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm border mb-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             {templateSettings.school_logo && (
               <img 
                 src={templateSettings.school_logo} 
                 alt="School Logo" 
-                className="h-16 object-contain"
+                className="h-12 md:h-16 object-contain mx-auto md:mx-0"
               />
             )}
-            <h2 className="text-2xl font-bold text-center flex-1" style={{ color: templateSettings.primary_color || '#1a1f2c' }}>
+            <h2 className="text-xl md:text-2xl font-bold text-center flex-1" style={{ color: templateSettings.primary_color || '#1a1f2c' }}>
               {templateSettings.school_name}
             </h2>
             {templateSettings.additional_logos?.[0] && (
               <img 
                 src={templateSettings.additional_logos[0]} 
                 alt="Additional Logo" 
-                className="h-16 object-contain"
+                className="h-12 md:h-16 object-contain mx-auto md:mx-0"
               />
             )}
           </div>
         </div>
       )}
 
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold">
           {isEditing ? "Edit Report" : "Create New Report"}
         </h1>
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-3">
           <Select
             value={language}
             onValueChange={(value: 'en' | 'my') => setLanguage(value)}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full md:w-[180px]">
               <SelectValue placeholder="Select Language" />
             </SelectTrigger>
             <SelectContent>
@@ -398,7 +396,7 @@ const CreateReport = () => {
           <Button 
             onClick={downloadReport} 
             variant="outline" 
-            className="gap-2"
+            className="gap-2 w-full md:w-auto"
             disabled={!form.formState.isValid}
           >
             <Download className="h-4 w-4" />
@@ -560,7 +558,7 @@ const CreateReport = () => {
 
             <div className="space-y-4">
               <FormLabel>{t.event_photos}</FormLabel>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
                     <img
