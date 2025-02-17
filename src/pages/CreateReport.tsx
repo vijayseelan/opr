@@ -85,6 +85,28 @@ const CreateReport = () => {
     enabled: isEditing,
   });
 
+  const { data: templateSettings } = useQuery({
+    queryKey: ["templateSettings"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("template_settings")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        toast.error("Failed to fetch template settings");
+        throw error;
+      }
+
+      return data;
+    },
+  });
+
   useEffect(() => {
     if (report) {
       form.reset({
@@ -184,6 +206,24 @@ const CreateReport = () => {
     
     reportElement.innerHTML = `
       <div style="padding: 20px; font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
+        ${templateSettings ? `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #ddd;">
+            ${templateSettings.school_logo ? `
+              <img src="${templateSettings.school_logo}" alt="School Logo" style="height: 80px; object-fit: contain;" />
+            ` : '<div style="width: 80px;"></div>'}
+            
+            <div style="text-align: center; flex-grow: 1; padding: 0 20px;">
+              <h2 style="margin: 0; color: ${templateSettings.primary_color || '#1a1f2c'}; font-size: 24px;">
+                ${templateSettings.school_name || ''}
+              </h2>
+            </div>
+            
+            ${templateSettings.additional_logos?.length ? `
+              <img src="${templateSettings.additional_logos[0]}" alt="Additional Logo" style="height: 80px; object-fit: contain;" />
+            ` : '<div style="width: 80px;"></div>'}
+          </div>
+        ` : ''}
+        
         <h1 style="text-align: center; font-size: 24px; margin-bottom: 30px; color: #1a1f2c;">${values.title}</h1>
         
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
@@ -229,6 +269,11 @@ const CreateReport = () => {
             </div>
           </div>
         ` : ''}
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+          <p style="margin-bottom: 5px;"><strong>Teacher's Name:</strong> ${values.teacher_name}</p>
+          <p><strong>Designation:</strong> ${values.teacher_designation}</p>
+        </div>
       </div>
     `;
 
