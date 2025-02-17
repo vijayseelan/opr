@@ -1,4 +1,3 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,6 +30,8 @@ const formSchema = z.object({
   attendance: z.string().min(1, "Attendance details are required"),
   impact: z.string().min(1, "Program impact is required"),
   summary: z.string().min(1, "Program summary is required"),
+  teacher_name: z.string().min(1, "Teacher's name is required"),
+  teacher_designation: z.string().min(1, "Teacher's designation is required"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -53,6 +54,8 @@ const CreateReport = () => {
       attendance: "",
       impact: "",
       summary: "",
+      teacher_name: "",
+      teacher_designation: "",
     },
   });
 
@@ -93,6 +96,8 @@ const CreateReport = () => {
         attendance: report.attendance,
         impact: report.impact,
         summary: report.summary,
+        teacher_name: report.teacher_name,
+        teacher_designation: report.teacher_designation,
       });
       if (report.images) {
         setImages(report.images);
@@ -132,7 +137,6 @@ const CreateReport = () => {
         return;
       }
 
-      // Create a properly typed report data object
       const reportData: Omit<Report, 'id' | 'created_at'> = {
         title: values.title,
         date: values.date,
@@ -144,6 +148,8 @@ const CreateReport = () => {
         summary: values.summary,
         images: images,
         user_id: user.id,
+        teacher_name: values.teacher_name,
+        teacher_designation: values.teacher_designation,
       };
 
       if (isEditing) {
@@ -382,6 +388,35 @@ const CreateReport = () => {
                 </FormItem>
               )}
             />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="teacher_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teacher's Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter teacher's name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="teacher_designation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teacher's Designation</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter teacher's designation" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="space-y-4">
               <FormLabel>Images</FormLabel>
