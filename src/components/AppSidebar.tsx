@@ -1,75 +1,90 @@
 
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { FileEdit, Files, Home, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, FileEdit, Files, LogOut } from "lucide-react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Button } from "./ui/button";
 
-export function AppSidebar() {
+const items = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Create Report",
+    url: "/create-report",
+    icon: FileEdit,
+  },
+  {
+    title: "All Reports",
+    url: "/all-reports",
+    icon: Files,
+  },
+];
+
+const AppSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
-  const links = [
-    { href: "/", label: "Dashboard", icon: Home },
-    { href: "/create-report", label: "Create Report", icon: FileEdit },
-    { href: "/all-reports", label: "All Reports", icon: Files },
-    { href: "/template-settings", label: "Template Settings", icon: Settings },
-  ];
 
   const handleSignOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
       toast.success("Signed out successfully");
-      navigate("/"); // Redirect to landing page
-    } catch (error) {
-      toast.error("Error signing out");
-      console.error("Error signing out:", error);
+      navigate('/');
+    } catch (error: any) {
+      toast.error(error.message || "Failed to sign out");
     }
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-30 h-screen w-64 border-r bg-background">
-      <div className="flex h-full flex-col justify-between">
-        <div className="space-y-4 py-4">
-          <div className="px-3 py-2">
-            <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-              Menu
-            </h2>
-            <div className="space-y-1">
-              {links.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  to={href}
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors",
-                    isActive(href) ? "bg-accent" : "transparent"
-                  )}
-                >
-                  <Icon className="mr-2 h-4 w-4" />
-                  {label}
-                </Link>
+    <Sidebar className="flex flex-col h-full">
+      <SidebarContent className="flex-1">
+        <SidebarGroup>
+          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    className={location.pathname === item.url ? "bg-accent" : ""}
+                    asChild
+                  >
+                    <Link to={item.url} className="flex items-center gap-2">
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               ))}
-            </div>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <div className="p-4 border-t border-sidebar-border">
+        <SidebarMenuButton
+          onClick={handleSignOut}
+          className="w-full text-red-500 hover:text-red-600"
+        >
+          <div className="flex items-center gap-2">
+            <LogOut className="h-4 w-4" />
+            <span>Sign Out</span>
           </div>
-        </div>
-        <div className="sticky bottom-0 border-t bg-background p-3">
-          <Button
-            variant="ghost"
-            className="w-full flex items-center justify-start px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-            onClick={handleSignOut}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
-        </div>
+        </SidebarMenuButton>
       </div>
-    </aside>
+    </Sidebar>
   );
-}
+};
+
+export default AppSidebar;
