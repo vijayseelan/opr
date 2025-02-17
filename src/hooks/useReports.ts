@@ -5,6 +5,12 @@ import { toast } from "sonner";
 import html2pdf from "html2pdf.js";
 import { Report } from "@/types/report";
 
+interface ProcessedImage {
+  url: string;
+  isPortrait: boolean;
+  aspectRatio: number;
+}
+
 export const useReports = () => {
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["reports"],
@@ -25,6 +31,68 @@ export const useReports = () => {
     },
   });
 
+  const processImage = (url: string): Promise<ProcessedImage> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve({
+          url,
+          isPortrait: img.naturalHeight > img.naturalWidth,
+          aspectRatio: img.naturalWidth / img.naturalHeight,
+        });
+      };
+      img.onerror = () => {
+        resolve({
+          url,
+          isPortrait: false,
+          aspectRatio: 16/9,
+        });
+      };
+      img.src = url;
+    });
+  };
+
+  const generateImagesHtml = (images: ProcessedImage[]) => {
+    if (!images.length) return '';
+
+    const portraitImages = images.filter(img => img.isPortrait);
+    const landscapeImages = images.filter(img => !img.isPortrait);
+
+    const portraitHtml = portraitImages.length ? `
+      <div style="margin-bottom: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(${portraitImages.length <= 4 ? 2 : 3}, 1fr); gap: 15px;">
+          ${portraitImages.map(image => `
+            <div>
+              <img src="${image.url}" 
+                   style="width: 100%; height: 400px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    const landscapeHtml = landscapeImages.length ? `
+      <div style="margin-bottom: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+          ${landscapeImages.map(image => `
+            <div>
+              <img src="${image.url}" 
+                   style="width: 100%; height: 300px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    return `
+      <div style="margin-top: 30px; margin-bottom: 30px;">
+        <h2 style="font-size: 18px; margin-bottom: 15px; color: #1a1f2c;">Event Photos</h2>
+        ${portraitHtml}
+        ${landscapeHtml}
+      </div>
+    `;
+  };
+
   const downloadReport = async (report: Report) => {
     const toastId = toast.loading("Generating PDF...");
     
@@ -35,6 +103,9 @@ export const useReports = () => {
         .eq("user_id", report.user_id)
         .eq("is_active", true)
         .single();
+
+      // Process images
+      const processedImages = await Promise.all((report.images || []).map(processImage));
 
       const headerHtml = templateSettings ? `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #ddd;">
@@ -53,6 +124,8 @@ export const useReports = () => {
           ` : '<div style="width: 80px;"></div>'}
         </div>
       ` : '';
+
+      const imagesHtml = generateImagesHtml(processedImages);
 
       const reportElement = document.createElement("div");
       reportElement.innerHTML = `
@@ -92,18 +165,7 @@ export const useReports = () => {
             </tr>
           </table>
           
-          ${report.images?.length ? `
-            <div style="margin-top: 30px; margin-bottom: 30px;">
-              <h2 style="font-size: 18px; margin-bottom: 15px; color: #1a1f2c;">Event Photos</h2>
-              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
-                ${report.images.map(image => `
-                  <div style="border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                    <img src="${image}" style="width: 100%; height: 200px; object-fit: cover;" />
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          ` : ''}
+          ${imagesHtml}
 
           <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #ddd;">
             <div style="text-align: right;">

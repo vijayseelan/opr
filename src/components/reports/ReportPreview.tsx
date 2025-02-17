@@ -42,6 +42,50 @@ export const ReportPreview = ({ report, isOpen, onClose }: ReportPreviewProps) =
     });
   };
 
+  const generateImagesHtml = (images: ProcessedImage[]) => {
+    if (!images.length) return '';
+
+    // Separate portrait and landscape images
+    const portraitImages = images.filter(img => img.isPortrait);
+    const landscapeImages = images.filter(img => !img.isPortrait);
+
+    // Generate HTML for portrait images
+    const portraitHtml = portraitImages.length ? `
+      <div style="margin-bottom: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(${portraitImages.length <= 4 ? 2 : 3}, 1fr); gap: 15px;">
+          ${portraitImages.map(image => `
+            <div>
+              <img src="${image.url}" 
+                   style="width: 100%; height: 400px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    // Generate HTML for landscape images
+    const landscapeHtml = landscapeImages.length ? `
+      <div style="margin-bottom: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+          ${landscapeImages.map(image => `
+            <div>
+              <img src="${image.url}" 
+                   style="width: 100%; height: 300px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    return `
+      <div style="margin-top: 30px; margin-bottom: 30px;">
+        <h2 style="font-size: 18px; margin-bottom: 15px; color: #1a1f2c;">Event Photos</h2>
+        ${portraitHtml}
+        ${landscapeHtml}
+      </div>
+    `;
+  };
+
   useEffect(() => {
     const generatePreview = async () => {
       try {
@@ -75,32 +119,7 @@ export const ReportPreview = ({ report, isOpen, onClose }: ReportPreviewProps) =
           </div>
         ` : '';
 
-        const imagesHtml = report.images?.length ? `
-          <div style="margin-top: 30px; margin-bottom: 30px;">
-            <h2 style="font-size: 18px; margin-bottom: 15px; color: #1a1f2c;">Event Photos</h2>
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-              ${processedImages.map((image, index) => {
-                if (image.isPortrait) {
-                  // Portrait images get less width but more height
-                  return `
-                    <div style="width: 50%; margin: 0 auto;">
-                      <img src="${image.url}" 
-                           style="width: 100%; max-height: 600px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
-                    </div>
-                  `;
-                } else {
-                  // Landscape images get full width
-                  return `
-                    <div style="width: 100%;">
-                      <img src="${image.url}" 
-                           style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
-                    </div>
-                  `;
-                }
-              }).join('')}
-            </div>
-          </div>
-        ` : '';
+        const imagesHtml = generateImagesHtml(processedImages);
 
         const html = `
           <div style="padding: 20px; font-family: Arial, sans-serif; background: white;">
