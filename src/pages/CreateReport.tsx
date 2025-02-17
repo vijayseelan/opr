@@ -50,7 +50,7 @@ const CreateReport = () => {
   const isEditing = Boolean(id);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
-  const { data: templates } = useQuery({
+  const { data: templates = [] } = useQuery({
     queryKey: ['templates'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -62,7 +62,7 @@ const CreateReport = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
@@ -79,13 +79,17 @@ const CreateReport = () => {
         .eq('is_active', true)
         .single();
 
-      if (error) throw error;
-      return data;
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+      return data || null;
     },
     enabled: !selectedTemplate,
   });
 
-  const currentTemplate = templates?.find(t => t.id === selectedTemplate) || activeTemplate;
+  const currentTemplate = selectedTemplate 
+    ? templates.find(t => t.id === selectedTemplate) 
+    : activeTemplate;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -343,7 +347,10 @@ const CreateReport = () => {
               />
             )}
             {currentTemplate.school_name && (
-              <h2 className="text-xl font-semibold" style={{ color: currentTemplate.primary_color || '#1a1f2c' }}>
+              <h2 
+                className="text-xl font-semibold" 
+                style={{ color: currentTemplate.primary_color || '#1a1f2c' }}
+              >
                 {currentTemplate.school_name}
               </h2>
             )}
@@ -360,7 +367,10 @@ const CreateReport = () => {
               </div>
             )}
             {currentTemplate.header_text && (
-              <p className="text-sm" style={{ color: currentTemplate.secondary_color || '#666666' }}>
+              <p 
+                className="text-sm" 
+                style={{ color: currentTemplate.secondary_color || '#666666' }}
+              >
                 {currentTemplate.header_text}
               </p>
             )}
