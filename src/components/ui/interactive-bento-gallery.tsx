@@ -270,7 +270,7 @@ const GalleryModal = ({ selectedItem, isOpen, onClose, setSelectedItem, mediaIte
                                 }}
                             >
                                 <MediaItem item={item} className="w-full h-full" onClick={() => setSelectedItem(item)} />
-                                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-white/20" />
+                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-transparent via-white/5 to-white/20" />
                                 {selectedItem.id === item.id && (
                                     <motion.div
                                         layoutId="activeGlow"
@@ -400,7 +400,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ media
                                     transition={{ duration: 0.2 }}
                                 >
                                     <div className="absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4">
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-transparent via-white/5 to-white/20" />
                                         <h3 className="relative text-white text-xs sm:text-sm md:text-base font-medium line-clamp-1">
                                             {item.title}
                                         </h3>
