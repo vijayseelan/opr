@@ -1,8 +1,10 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileEdit, Files, CircleDot, CalendarDays, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useReports } from "@/hooks/useReports";
 import { format } from "date-fns";
+import InteractiveBentoGallery from "@/components/ui/interactive-bento-gallery";
 
 const Dashboard = () => {
   const { reports, isLoading } = useReports();
@@ -16,7 +18,23 @@ const Dashboard = () => {
            reportDate.getFullYear() === currentDate.getFullYear();
   }).length;
 
-  const mostRecentReport = reports.length > 0 ? reports[0] : null; // Reports are already sorted by created_at desc
+  const mostRecentReport = reports.length > 0 ? reports[0] : null;
+
+  // Transform reports with images into gallery items
+  const galleryItems = reports
+    .filter(report => report.images && report.images.length > 0)
+    .flatMap(report => 
+      report.images.map((imageUrl, index) => ({
+        id: index + 1,
+        type: "image",
+        title: report.title,
+        desc: `${format(new Date(report.date), "MMMM d, yyyy")} - ${report.venue}`,
+        url: imageUrl,
+        span: index % 3 === 0 
+          ? "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2"
+          : "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+      }))
+    );
 
   return (
     <div className="space-y-6">
@@ -145,6 +163,22 @@ const Dashboard = () => {
               <div className="text-sm font-medium">Summary</div>
               <div className="text-sm text-muted-foreground line-clamp-2">{mostRecentReport.summary}</div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Report Images Gallery */}
+      {galleryItems.length > 0 && (
+        <Card className="p-4">
+          <CardHeader>
+            <CardTitle>Report Images Gallery</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InteractiveBentoGallery
+              mediaItems={galleryItems}
+              title="Event Reports Gallery"
+              description="Explore images from various events"
+            />
           </CardContent>
         </Card>
       )}
