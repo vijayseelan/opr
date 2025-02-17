@@ -270,9 +270,11 @@ const CreateReport = () => {
           </div>
         ` : ''}
         
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
-          <p style="margin-bottom: 5px;"><strong>Teacher's Name:</strong> ${values.teacher_name}</p>
-          <p><strong>Designation:</strong> ${values.teacher_designation}</p>
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #ddd;">
+          <div style="text-align: right;">
+            <p style="margin-bottom: 5px;"><strong>Teacher's Name:</strong> ${values.teacher_name}</p>
+            <p><strong>Designation:</strong> ${values.teacher_designation}</p>
+          </div>
         </div>
       </div>
     `;
@@ -297,6 +299,30 @@ const CreateReport = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {templateSettings && (
+        <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+          <div className="flex justify-between items-center gap-4">
+            {templateSettings.school_logo && (
+              <img 
+                src={templateSettings.school_logo} 
+                alt="School Logo" 
+                className="h-16 object-contain"
+              />
+            )}
+            <h2 className="text-2xl font-bold text-center flex-1" style={{ color: templateSettings.primary_color || '#1a1f2c' }}>
+              {templateSettings.school_name}
+            </h2>
+            {templateSettings.additional_logos?.[0] && (
+              <img 
+                src={templateSettings.additional_logos[0]} 
+                alt="Additional Logo" 
+                className="h-16 object-contain"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">
           {isEditing ? "Edit Report" : "Create New Report"}
