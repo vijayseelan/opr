@@ -26,6 +26,8 @@ export const useReports = () => {
   });
 
   const downloadReport = async (report: Report) => {
+    const toastId = toast.loading("Generating PDF...");
+    
     try {
       const { data: templateSettings } = await supabase
         .from("template_settings")
@@ -128,10 +130,11 @@ export const useReports = () => {
         }
       };
 
-      toast.loading("Generating PDF...");
       await html2pdf().set(opt).from(reportElement).save();
+      toast.dismiss(toastId);
       toast.success("Report downloaded successfully!");
     } catch (error) {
+      toast.dismiss(toastId);
       toast.error("Failed to generate PDF");
       console.error(error);
     }
