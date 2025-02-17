@@ -1,4 +1,3 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -41,6 +40,44 @@ const CreateReport = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+
+  const { data: templates } = useQuery({
+    queryKey: ['templates'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('template_settings')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: activeTemplate } = useQuery({
+    queryKey: ['activeTemplate'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('template_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !selectedTemplate,
+  });
+
+  const currentTemplate = templates?.find(t => t.id === selectedTemplate) || activeTemplate;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -132,7 +169,6 @@ const CreateReport = () => {
         return;
       }
 
-      // Create a properly typed report data object
       const reportData: Omit<Report, 'id' | 'created_at'> = {
         title: values.title,
         date: values.date,
@@ -178,6 +214,27 @@ const CreateReport = () => {
     
     reportElement.innerHTML = `
       <div style="padding: 20px; font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
+        ${currentTemplate ? `
+          <div style="text-align: center; margin-bottom: 30px;">
+            ${currentTemplate.school_logo ? `
+              <img src="${currentTemplate.school_logo}" style="max-width: 200px; max-height: 100px; margin-bottom: 10px;" />
+            ` : ''}
+            ${currentTemplate.school_name ? `
+              <h2 style="margin: 10px 0; color: ${currentTemplate.primary_color || '#1a1f2c'};">${currentTemplate.school_name}</h2>
+            ` : ''}
+            ${currentTemplate.additional_logos?.length > 0 ? `
+              <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px;">
+                ${currentTemplate.additional_logos.map(logo => `
+                  <img src="${logo}" style="max-width: 80px; max-height: 40px;" />
+                `).join('')}
+              </div>
+            ` : ''}
+            ${currentTemplate.header_text ? `
+              <p style="margin-top: 10px; color: ${currentTemplate.secondary_color || '#666666'};">${currentTemplate.header_text}</p>
+            ` : ''}
+          </div>
+        ` : ''}
+        
         <h1 style="text-align: center; font-size: 24px; margin-bottom: 30px; color: #1a1f2c;">${values.title}</h1>
         
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
@@ -223,6 +280,12 @@ const CreateReport = () => {
             </div>
           </div>
         ` : ''}
+        
+        ${currentTemplate?.footer_text ? `
+          <div style="margin-top: 30px; text-align: center; color: ${currentTemplate.secondary_color || '#666666'};">
+            <p>${currentTemplate.footer_text}</p>
+          </div>
+        ` : ''}
       </div>
     `;
 
@@ -260,6 +323,63 @@ const CreateReport = () => {
           Download Report
         </Button>
       </div>
+
+      {currentTemplate && (
+        <Card className="p-6 bg-gray-50">
+          <div className="text-center space-y-4">
+            {currentTemplate.school_logo && (
+              <img
+                src={currentTemplate.school_logo}
+                alt="School logo"
+                className="max-h-24 mx-auto object-contain"
+              />
+            )}
+            {currentTemplate.school_name && (
+              <h2 className="text-xl font-semibold" style={{ color: currentTemplate.primary_color || '#1a1f2c' }}>
+                {currentTemplate.school_name}
+              </h2>
+            )}
+            {currentTemplate.additional_logos && currentTemplate.additional_logos.length > 0 && (
+              <div className="flex justify-center gap-4">
+                {currentTemplate.additional_logos.map((logo, index) => (
+                  <img
+                    key={index}
+                    src={logo}
+                    alt={`Additional logo ${index + 1}`}
+                    className="h-8 object-contain"
+                  />
+                ))}
+              </div>
+            )}
+            {currentTemplate.header_text && (
+              <p className="text-sm" style={{ color: currentTemplate.secondary_color || '#666666' }}>
+                {currentTemplate.header_text}
+              </p>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {templates && templates.length > 0 && (
+        <Card className="p-4">
+          <FormLabel>Select Template</FormLabel>
+          <Select
+            value={selectedTemplate || (activeTemplate?.id ?? '')}
+            onValueChange={setSelectedTemplate}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Choose a template" />
+            </SelectTrigger>
+            <SelectContent>
+              {templates.map((template) => (
+                <SelectItem key={template.id} value={template.id}>
+                  {template.name} {template.is_active ? '(Active)' : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Card>
+      )}
       
       <div ref={reportRef}>
         <Form {...form}>

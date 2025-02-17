@@ -62,7 +62,9 @@ export type Database = {
           footer_text: string | null
           header_text: string | null
           id: string
+          is_active: boolean | null
           language: string | null
+          name: string
           primary_color: string | null
           school_logo: string | null
           school_name: string | null
@@ -77,7 +79,9 @@ export type Database = {
           footer_text?: string | null
           header_text?: string | null
           id?: string
+          is_active?: boolean | null
           language?: string | null
+          name?: string
           primary_color?: string | null
           school_logo?: string | null
           school_name?: string | null
@@ -92,7 +96,9 @@ export type Database = {
           footer_text?: string | null
           header_text?: string | null
           id?: string
+          is_active?: boolean | null
           language?: string | null
+          name?: string
           primary_color?: string | null
           school_logo?: string | null
           school_name?: string | null
