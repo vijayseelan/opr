@@ -20,21 +20,30 @@ const Dashboard = () => {
 
   const mostRecentReport = reports.length > 0 ? reports[0] : null;
 
-  // Transform reports with images into gallery items
+  // Transform reports with images into gallery items - limit to 9 random images
   const galleryItems = reports
     .filter(report => report.images && report.images.length > 0)
     .flatMap(report => 
       report.images.map((imageUrl, index) => ({
-        id: index + 1,
+        id: Math.random(), // Use random id to ensure uniqueness
         type: "image",
         title: report.title,
         desc: `${format(new Date(report.date), "MMMM d, yyyy")} - ${report.venue}`,
         url: imageUrl,
-        span: index % 3 === 0 
-          ? "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2"
-          : "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+        span: "", // We'll set this after shuffling
       }))
-    );
+    )
+    // Shuffle array
+    .sort(() => Math.random() - 0.5)
+    // Take only first 9 items
+    .slice(0, 9)
+    // Set spans based on position
+    .map((item, index) => ({
+      ...item,
+      span: index % 3 === 0 
+        ? "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2"
+        : "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+    }));
 
   return (
     <div className="space-y-6">
