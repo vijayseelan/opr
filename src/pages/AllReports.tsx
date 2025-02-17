@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import html2pdf from "html2pdf.js";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface Report {
   id: string;
@@ -23,12 +22,13 @@ interface Report {
   summary: string;
   images: string[] | null;
   user_id: string;
-  created_at: string;  // Added this field to match the database schema
+  created_at: string;
 }
 
 const AllReports = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const navigate = useNavigate();
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["reports"],
@@ -138,6 +138,11 @@ const AllReports = () => {
     } catch (error: any) {
       toast.error(error.message || "Failed to duplicate report");
     }
+  };
+
+  const handleEditReport = (reportId: string) => {
+    setSelectedReport(null);
+    navigate(`/edit-report/${reportId}`);
   };
 
   if (isLoading) {
@@ -253,11 +258,13 @@ const AllReports = () => {
               </div>
 
               <div className="flex gap-2 pt-4 border-t">
-                <Button variant="outline" asChild>
-                  <Link to={`/edit-report/${selectedReport.id}`} className="flex items-center gap-2">
-                    <Edit className="h-4 w-4" />
-                    Edit
-                  </Link>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  onClick={() => handleEditReport(selectedReport.id)}
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit
                 </Button>
                 <Button
                   variant="outline"
