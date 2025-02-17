@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { Edit, Copy, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Report } from "@/types/report";
-import { ThreeDPhotoCarousel } from "@/components/ui/3d-carousel";
+import { Carousel } from "@/components/ui/carousel";
 
 interface ReportDetailProps {
   report: Report;
@@ -20,6 +20,12 @@ export const ReportDetail = ({
   onDuplicate,
   onDownload,
 }: ReportDetailProps) => {
+  const slides = report.images?.map((image, index) => ({
+    title: `Image ${index + 1}`,
+    button: "View Full Size",
+    src: image,
+  })) || [];
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -68,10 +74,12 @@ export const ReportDetail = ({
               <p>{report.summary}</p>
             </div>
 
-            {report.images && report.images.length > 0 && (
+            {slides.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-2">Images</h3>
-                <ThreeDPhotoCarousel images={report.images} />
+                <div className="relative w-full">
+                  <Carousel slides={slides} />
+                </div>
               </div>
             )}
           </div>
