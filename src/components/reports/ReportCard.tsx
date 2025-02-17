@@ -1,8 +1,9 @@
 
-import { FileText } from "lucide-react";
+import { FileText, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Report } from "@/types/report";
 import { BentoCard } from "@/components/ui/bento-card";
+import { Button } from "@/components/ui/button";
 
 interface ReportCardProps {
   report: Report;
@@ -20,24 +21,39 @@ const cardColors = [
   ["#EF4444", "#F87171", "#FCA5A5"], // Red
 ];
 
-export const ReportCard = ({ report, onClick }: ReportCardProps) => {
+export const ReportCard = ({ report, onClick, onDelete }: ReportCardProps) => {
   // Get a random color combination based on the report id
   const colorIndex = parseInt(report.id.slice(-1), 16) % cardColors.length;
   const colors = cardColors[colorIndex];
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    onDelete(report.id);
+  };
+
   return (
-    <BentoCard
-      title={
-        <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          {report.title}
-        </div>
-      }
-      value={format(new Date(report.date), "dd MMMM yyyy")}
-      subtitle={`Venue: ${report.venue}`}
-      colors={colors}
-      delay={0.2}
-      onClick={onClick}
-    />
+    <div className="group relative">
+      <BentoCard
+        title={
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            {report.title}
+          </div>
+        }
+        value={format(new Date(report.date), "dd MMMM yyyy")}
+        subtitle={`Venue: ${report.venue}`}
+        colors={colors}
+        delay={0.2}
+        onClick={onClick}
+      />
+      <Button
+        variant="destructive"
+        size="icon"
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={handleDelete}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
   );
 };
