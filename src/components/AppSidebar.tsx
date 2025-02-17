@@ -59,19 +59,19 @@ const AppSidebar = () => {
       <SidebarRail />
       <SidebarContent className="flex-1">
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-base font-semibold">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    className={location.pathname === item.url ? "bg-accent" : ""}
+                    className={`${location.pathname === item.url ? "bg-accent font-medium" : ""} transition-colors duration-200`}
                     asChild
                     tooltip={item.title}
                   >
-                    <Link to={item.url} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                    <Link to={item.url} className="flex items-center gap-3 py-2">
+                      <item.icon className="h-5 w-5" />
+                      <span className="text-base">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -84,12 +84,12 @@ const AppSidebar = () => {
       <div className="p-4 border-t border-sidebar-border">
         <SidebarMenuButton
           onClick={handleSignOut}
-          className="w-full text-red-500 hover:text-red-600"
+          className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors duration-200"
           tooltip="Sign Out"
         >
-          <div className="flex items-center gap-2">
-            <LogOut className="h-4 w-4" />
-            <span>Sign Out</span>
+          <div className="flex items-center gap-3 py-2">
+            <LogOut className="h-5 w-5" />
+            <span className="text-base font-medium">Sign Out</span>
           </div>
         </SidebarMenuButton>
       </div>
