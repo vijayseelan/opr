@@ -1,5 +1,10 @@
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Copy, Download, Eye, Pencil } from "lucide-react";
 import { Report } from "@/types/report";
@@ -26,11 +31,11 @@ export const ReportDetail = ({
 
   return (
     <>
-      <Sheet open onOpenChange={onClose}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>{report.title}</SheetTitle>
-          </SheetHeader>
+      <Dialog open onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{report.title}</DialogTitle>
+          </DialogHeader>
 
           <div className="mt-6 space-y-6">
             <div className="flex flex-wrap gap-2">
@@ -116,8 +121,8 @@ export const ReportDetail = ({
               )}
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       <ReportPreview
         report={report}
