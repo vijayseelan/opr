@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
 
 const items = [
   {
@@ -36,15 +35,6 @@ const items = [
 const AppSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    const getUserEmail = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserEmail(user?.email ?? null);
-    };
-    getUserEmail();
-  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -58,7 +48,7 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar className="relative flex flex-col h-full">
+    <Sidebar>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
@@ -77,27 +67,22 @@ const AppSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={handleSignOut}
+                  className="w-full text-red-500 hover:text-red-600"
+                >
+                  <div className="flex items-center gap-2">
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <div className="mt-auto p-4 border-t border-sidebar-border">
-        {userEmail && (
-          <div className="text-sm text-muted-foreground mb-2 truncate">
-            {userEmail}
-          </div>
-        )}
-        <SidebarMenuButton
-          onClick={handleSignOut}
-          className="w-full text-red-500 hover:text-red-600"
-        >
-          <div className="flex items-center gap-2">
-            <LogOut className="h-4 w-4" />
-            <span>Sign Out</span>
-          </div>
-        </SidebarMenuButton>
-      </div>
     </Sidebar>
   );
 };
