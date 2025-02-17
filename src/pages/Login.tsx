@@ -7,6 +7,8 @@ import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AuroraBackground } from "@/components/ui/aurora-background";
+import { motion } from "framer-motion";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -36,18 +38,27 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <Link to="/" className="inline-flex items-center text-gray-600 mb-6">
+    <AuroraBackground>
+      <motion.div
+        initial={{ opacity: 0.0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          delay: 0.3,
+          duration: 0.8,
+          ease: "easeInOut",
+        }}
+        className="relative bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md p-8 rounded-lg shadow-md w-full max-w-md"
+      >
+        <Link to="/" className="inline-flex items-center text-gray-600 dark:text-gray-300 mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
         
-        <h2 className="text-2xl font-bold mb-6">Log In</h2>
+        <h2 className="text-2xl font-bold mb-6 dark:text-white">Log In</h2>
         
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="dark:text-gray-200">Email</Label>
             <Input
               id="email"
               type="email"
@@ -55,11 +66,12 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="bg-white/50 dark:bg-zinc-900/50"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="dark:text-gray-200">Password</Label>
             <Input
               id="password"
               type="password"
@@ -67,6 +79,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="bg-white/50 dark:bg-zinc-900/50"
             />
           </div>
 
@@ -74,15 +87,15 @@ const Login = () => {
             {loading ? "Logging in..." : "Log In"}
           </Button>
 
-          <p className="text-center text-sm text-gray-600">
+          <p className="text-center text-sm text-gray-600 dark:text-gray-300">
             Don't have an account?{" "}
             <Link to="/signup" className="text-primary hover:underline">
               Sign up
             </Link>
           </p>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </AuroraBackground>
   );
 };
 
