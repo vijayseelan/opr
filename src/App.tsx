@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import TemplateSettings from "./pages/TemplateSettings";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="create-report" element={<CreateReport />} />
             <Route path="edit-report/:id" element={<CreateReport />} />
             <Route path="all-reports" element={<AllReports />} />
+            <Route path="template-settings" element={<TemplateSettings />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
