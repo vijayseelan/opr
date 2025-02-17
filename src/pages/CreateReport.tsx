@@ -1,4 +1,3 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -53,7 +52,6 @@ const CreateReport = () => {
     },
   });
 
-  // Fetch report data if editing
   const { data: report } = useQuery({
     queryKey: ["report", id],
     queryFn: async () => {
@@ -73,7 +71,6 @@ const CreateReport = () => {
     enabled: isEditing,
   });
 
-  // Set form values when editing
   useEffect(() => {
     if (report) {
       form.reset({
@@ -124,14 +121,17 @@ const CreateReport = () => {
         return;
       }
 
+      const reportData = {
+        ...values,
+        images,
+        user_id: user.id,
+      };
+
       if (isEditing) {
         // Update existing report
         const { error } = await supabase
           .from('reports')
-          .update({
-            ...values,
-            images: images,
-          })
+          .update(reportData)
           .eq('id', id);
 
         if (error) throw error;
@@ -140,11 +140,7 @@ const CreateReport = () => {
         // Create new report
         const { error } = await supabase
           .from('reports')
-          .insert({
-            ...values,
-            images: images,
-            user_id: user.id
-          });
+          .insert(reportData);
 
         if (error) throw error;
         toast.success("Report created successfully!");
