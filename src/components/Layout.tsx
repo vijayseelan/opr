@@ -1,7 +1,7 @@
 
 import { Outlet } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "./AppSidebar";
+import { AppSidebar } from "./AppSidebar"; // Changed from default import to named import
 
 const Layout = () => {
   return (
