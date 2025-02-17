@@ -3,6 +3,13 @@ import { format } from "date-fns";
 import { Edit, Copy, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Report } from "@/types/report";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface ReportDetailProps {
   report: Report;
@@ -70,15 +77,24 @@ export const ReportDetail = ({
             {report.images && report.images.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-2">Images</h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {report.images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`Report image ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                  ))}
+                <div className="relative w-full">
+                  <Carousel className="w-full">
+                    <CarouselContent>
+                      {report.images.map((image, index) => (
+                        <CarouselItem key={index}>
+                          <div className="flex aspect-video items-center justify-center">
+                            <img
+                              src={image}
+                              alt={`Report image ${index + 1}`}
+                              className="w-full h-full object-contain rounded-lg"
+                            />
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="absolute left-2" />
+                    <CarouselNext className="absolute right-2" />
+                  </Carousel>
                 </div>
               </div>
             )}
