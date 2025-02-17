@@ -84,13 +84,18 @@ const CreateReport = () => {
 
       const { error } = await supabase
         .from('reports')
-        .insert([
-          {
-            ...values,
-            images,
-            user_id: user.id
-          }
-        ]);
+        .insert({
+          title: values.title,
+          date: values.date,
+          time: values.time,
+          venue: values.venue,
+          organizer: values.organizer,
+          attendance: values.attendance,
+          impact: values.impact,
+          summary: values.summary,
+          images: images,
+          user_id: user.id
+        });
 
       if (error) throw error;
 
