@@ -15,10 +15,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ImagePlus, Download } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import html2pdf from "html2pdf.js";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -35,6 +36,8 @@ const CreateReport = () => {
   const [images, setImages] = useState<string[]>([]);
   const reportRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { id } = useParams(); // Get the report ID from URL if editing
+  const isEditing = Boolean(id);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,6 +52,45 @@ const CreateReport = () => {
       summary: "",
     },
   });
+
+  // Fetch report data if editing
+  const { data: report } = useQuery({
+    queryKey: ["report", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from("reports")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        toast.error("Failed to fetch report");
+        throw error;
+      }
+      return data;
+    },
+    enabled: isEditing,
+  });
+
+  // Set form values when editing
+  useEffect(() => {
+    if (report) {
+      form.reset({
+        title: report.title,
+        date: report.date,
+        time: report.time,
+        venue: report.venue,
+        organizer: report.organizer,
+        attendance: report.attendance,
+        impact: report.impact,
+        summary: report.summary,
+      });
+      if (report.images) {
+        setImages(report.images);
+      }
+    }
+  }, [report, form]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -82,28 +124,36 @@ const CreateReport = () => {
         return;
       }
 
-      const { error } = await supabase
-        .from('reports')
-        .insert({
-          title: values.title,
-          date: values.date,
-          time: values.time,
-          venue: values.venue,
-          organizer: values.organizer,
-          attendance: values.attendance,
-          impact: values.impact,
-          summary: values.summary,
-          images: images,
-          user_id: user.id
-        });
+      if (isEditing) {
+        // Update existing report
+        const { error } = await supabase
+          .from('reports')
+          .update({
+            ...values,
+            images: images,
+          })
+          .eq('id', id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success("Report updated successfully!");
+      } else {
+        // Create new report
+        const { error } = await supabase
+          .from('reports')
+          .insert({
+            ...values,
+            images: images,
+            user_id: user.id
+          });
 
-      toast.success("Report created successfully!");
-      navigate('/all-reports'); // Redirect to all reports page after successful creation
+        if (error) throw error;
+        toast.success("Report created successfully!");
+      }
+
+      navigate('/all-reports');
     } catch (error: any) {
-      toast.error(error.message || "Failed to create report");
-      console.error('Error creating report:', error);
+      toast.error(error.message || `Failed to ${isEditing ? 'update' : 'create'} report`);
+      console.error('Error with report:', error);
     }
   }
 
@@ -180,7 +230,9 @@ const CreateReport = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Create New Report</h1>
+        <h1 className="text-3xl font-bold">
+          {isEditing ? "Edit Report" : "Create New Report"}
+        </h1>
         <Button 
           onClick={downloadReport} 
           variant="outline" 
@@ -348,7 +400,7 @@ const CreateReport = () => {
             </div>
 
             <Button type="submit" className="w-full">
-              Create Report
+              {isEditing ? "Update Report" : "Create Report"}
             </Button>
           </form>
         </Form>
