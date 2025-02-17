@@ -28,6 +28,7 @@ const App = () => (
           <Route path="/" element={<Layout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="create-report" element={<CreateReport />} />
+            <Route path="edit-report/:id" element={<CreateReport />} />
             <Route path="all-reports" element={<AllReports />} />
             <Route path="*" element={<NotFound />} />
           </Route>
