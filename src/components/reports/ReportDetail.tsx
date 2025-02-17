@@ -1,16 +1,18 @@
 
-import { format } from "date-fns";
-import { Edit, Copy, Download, X } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Copy, Download, Eye, Pencil } from "lucide-react";
 import { Report } from "@/types/report";
-import { Carousel } from "@/components/ui/carousel";
+import { format } from "date-fns";
+import { ReportPreview } from "./ReportPreview";
+import { useState } from "react";
 
 interface ReportDetailProps {
   report: Report;
   onClose: () => void;
   onEdit: (id: string) => void;
-  onDuplicate: (report: Report) => void;
-  onDownload: (report: Report) => void;
+  onDuplicate: (report: Report) => Promise<void>;
+  onDownload: (report: Report) => Promise<void>;
 }
 
 export const ReportDetail = ({
@@ -20,98 +22,108 @@ export const ReportDetail = ({
   onDuplicate,
   onDownload,
 }: ReportDetailProps) => {
-  const slides = report.images?.map((image, index) => ({
-    title: `Image ${index + 1}`,
-    button: "View Full Size",
-    src: image,
-  })) || [];
+  const [showPreview, setShowPreview] = useState(false);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
-        <div className="p-6 space-y-6 overflow-x-hidden">
-          <div className="flex justify-between items-start">
-            <h2 className="text-2xl font-bold">{report.title}</h2>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+    <>
+      <Sheet open onOpenChange={onClose}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>{report.title}</SheetTitle>
+          </SheetHeader>
 
-          <div className="grid gap-4">
-            <div className="grid md:grid-cols-2 gap-4">
+          <div className="mt-6 space-y-6">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={() => onEdit(report.id)}
+                className="flex-1"
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => onDuplicate(report)}
+                className="flex-1"
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicate
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => onDownload(report)}
+                className="flex-1"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowPreview(true)}
+                className="flex-1"
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                Preview
+              </Button>
+            </div>
+
+            <div className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-1">Date</h3>
-                <p>{format(new Date(report.date), "dd MMMM yyyy")}</p>
+                <h3 className="font-medium text-muted-foreground">Date</h3>
+                <p>{format(new Date(report.date), "MMMM d, yyyy")}</p>
               </div>
               <div>
-                <h3 className="font-semibold mb-1">Time</h3>
+                <h3 className="font-medium text-muted-foreground">Time</h3>
                 <p>{report.time}</p>
               </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-1">Venue</h3>
-              <p>{report.venue}</p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-1">Organizer</h3>
-              <p>{report.organizer}</p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-1">Attendance</h3>
-              <p>{report.attendance}</p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-1">Program Impact</h3>
-              <p>{report.impact}</p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-1">Program Summary</h3>
-              <p>{report.summary}</p>
-            </div>
-
-            {slides.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-2">Images</h3>
-                <div className="relative w-full">
-                  <Carousel slides={slides} />
-                </div>
+                <h3 className="font-medium text-muted-foreground">Venue</h3>
+                <p>{report.venue}</p>
               </div>
-            )}
+              <div>
+                <h3 className="font-medium text-muted-foreground">Organizer</h3>
+                <p>{report.organizer}</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-muted-foreground">Attendance</h3>
+                <p>{report.attendance}</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-muted-foreground">Program Impact</h3>
+                <p>{report.impact}</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-muted-foreground">Program Summary</h3>
+                <p>{report.summary}</p>
+              </div>
+              {report.images && report.images.length > 0 && (
+                <div>
+                  <h3 className="font-medium text-muted-foreground mb-2">
+                    Event Photos
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {report.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`Event photo ${index + 1}`}
+                        className="rounded-lg object-cover w-full aspect-video"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
+        </SheetContent>
+      </Sheet>
 
-          <div className="flex gap-2 pt-4 border-t">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => onEdit(report.id)}
-            >
-              <Edit className="h-4 w-4" />
-              Edit
-            </Button>
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => onDuplicate(report)}
-            >
-              <Copy className="h-4 w-4" />
-              Duplicate
-            </Button>
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => onDownload(report)}
-            >
-              <Download className="h-4 w-4" />
-              Download
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <ReportPreview
+        report={report}
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+      />
+    </>
   );
 };
