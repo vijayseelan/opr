@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileEdit, Files, CircleDot, CalendarDays, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -119,6 +118,10 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-2 md:grid-cols-2">
+              <div>
+                <div className="text-sm font-medium">Title</div>
+                <div className="text-sm text-muted-foreground">{mostRecentReport.title}</div>
+              </div>
               <div>
                 <div className="text-sm font-medium">Event Date</div>
                 <div className="text-sm text-muted-foreground">
