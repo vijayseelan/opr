@@ -188,16 +188,7 @@ const CreateReport = () => {
       }
 
       const reportData = {
-        title: values.title,
-        date: values.date,
-        time: values.time,
-        venue: values.venue,
-        organizer: values.organizer,
-        attendance: values.attendance,
-        impact: values.impact,
-        summary: values.summary,
-        teacher_name: values.teacher_name,
-        teacher_designation: values.teacher_designation,
+        ...values,
         images,
         user_id: user.id,
         language,

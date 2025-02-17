@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { AnimatedGradient } from "@/components/ui/animated-gradient-with-svg";
 
 interface BentoCardProps {
-  title: React.ReactNode;
+  title: string;
   value: string | number;
   subtitle?: string;
   colors: string[];
@@ -53,12 +53,12 @@ const BentoCard: React.FC<BentoCardProps> = ({
         initial="hidden"
         animate="show"
       >
-        <motion.div 
+        <motion.h3 
           className="text-sm sm:text-base md:text-lg text-foreground" 
           variants={item}
         >
           {title}
-        </motion.div>
+        </motion.h3>
         <motion.p
           className="text-2xl sm:text-4xl md:text-5xl font-medium mb-4 text-foreground"
           variants={item}
