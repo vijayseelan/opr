@@ -53,6 +53,12 @@ const CreateReport = () => {
   const isEditing = Boolean(id);
   const t = translations[language];
 
+  const getPlaceholder = (fieldName: string) => {
+    return language === 'en' ? 
+      `Enter ${fieldName.toLowerCase()}` : 
+      `Masukkan ${fieldName.toLowerCase()}`;
+  };
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -172,7 +178,7 @@ const CreateReport = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  async function onSubmit(values: FormValues) {
+  const onSubmit = async (values: FormValues) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -181,7 +187,7 @@ const CreateReport = () => {
         return;
       }
 
-      const reportData: Omit<Report, 'id' | 'created_at'> = {
+      const reportData = {
         ...values,
         images,
         user_id: user.id,
@@ -210,7 +216,7 @@ const CreateReport = () => {
       toast.error(error.message || `Failed to ${isEditing ? 'update' : 'create'} report`);
       console.error('Error with report:', error);
     }
-  }
+  };
 
   const downloadReport = async () => {
     if (!reportRef.current) return;
@@ -400,7 +406,7 @@ const CreateReport = () => {
                 <FormItem>
                   <FormLabel>{t.title}</FormLabel>
                   <FormControl>
-                    <Input placeholder={`Enter ${t.title.toLowerCase()}`} {...field} />
+                    <Input placeholder={getPlaceholder(t.title)} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -441,7 +447,7 @@ const CreateReport = () => {
                 <FormItem>
                   <FormLabel>{t.venue}</FormLabel>
                   <FormControl>
-                    <Input placeholder={`Enter ${t.venue.toLowerCase()}`} {...field} />
+                    <Input placeholder={getPlaceholder(t.venue)} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -454,7 +460,7 @@ const CreateReport = () => {
                 <FormItem>
                   <FormLabel>{t.organizer}</FormLabel>
                   <FormControl>
-                    <Input placeholder={`Enter ${t.organizer.toLowerCase()}`} {...field} />
+                    <Input placeholder={getPlaceholder(t.organizer)} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -468,7 +474,7 @@ const CreateReport = () => {
                   <FormLabel>{t.attendance}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder={`Enter ${t.attendance.toLowerCase()}`}
+                      placeholder={getPlaceholder(t.attendance)}
                       {...field}
                       rows={4}
                     />
@@ -485,7 +491,7 @@ const CreateReport = () => {
                   <FormLabel>{t.impact}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder={`Enter ${t.impact.toLowerCase()}`}
+                      placeholder={getPlaceholder(t.impact)}
                       {...field}
                       rows={4}
                     />
@@ -502,7 +508,7 @@ const CreateReport = () => {
                   <FormLabel>{t.summary}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder={`Enter ${t.summary.toLowerCase()}`}
+                      placeholder={getPlaceholder(t.summary)}
                       {...field}
                       rows={6}
                     />
@@ -520,7 +526,7 @@ const CreateReport = () => {
                   <FormItem>
                     <FormLabel>{t.teacher_name}</FormLabel>
                     <FormControl>
-                      <Input placeholder={`Enter ${t.teacher_name.toLowerCase()}`} {...field} />
+                      <Input placeholder={getPlaceholder(t.teacher_name)} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -533,7 +539,7 @@ const CreateReport = () => {
                   <FormItem>
                     <FormLabel>{t.teacher_designation}</FormLabel>
                     <FormControl>
-                      <Input placeholder={`Enter ${t.teacher_designation.toLowerCase()}`} {...field} />
+                      <Input placeholder={getPlaceholder(t.teacher_designation)} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
