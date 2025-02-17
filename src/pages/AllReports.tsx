@@ -7,6 +7,8 @@ import { ReportCard } from "@/components/reports/ReportCard";
 import { ReportDetail } from "@/components/reports/ReportDetail";
 import { useReports } from "@/hooks/useReports";
 import { Report } from "@/types/report";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const AllReports = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,6 +23,23 @@ const AllReports = () => {
   const handleEditReport = (reportId: string) => {
     setSelectedReport(null);
     navigate(`/edit-report/${reportId}`);
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    try {
+      const { error } = await supabase
+        .from("reports")
+        .delete()
+        .eq("id", reportId);
+
+      if (error) throw error;
+
+      toast.success("Report deleted successfully");
+      // Force a refetch of the reports
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete report");
+    }
   };
 
   if (isLoading) {
@@ -48,6 +67,7 @@ const AllReports = () => {
             key={report.id}
             report={report}
             onClick={() => setSelectedReport(report)}
+            onDelete={handleDeleteReport}
           />
         ))}
       </div>
