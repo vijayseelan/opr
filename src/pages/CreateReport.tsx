@@ -20,6 +20,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Report } from "@/types/report";
+import { translations } from "@/utils/reportTranslations";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -38,10 +46,12 @@ type FormValues = z.infer<typeof formSchema>;
 
 const CreateReport = () => {
   const [images, setImages] = useState<string[]>([]);
+  const [language, setLanguage] = useState<'en' | 'my'>('en');
   const reportRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
+  const t = translations[language];
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -181,6 +191,7 @@ const CreateReport = () => {
         user_id: user.id,
         teacher_name: values.teacher_name,
         teacher_designation: values.teacher_designation,
+        language: language,
       };
 
       if (isEditing) {
@@ -330,6 +341,10 @@ const CreateReport = () => {
     }
   };
 
+  const handleLanguageChange = (value: 'en' | 'my') => {
+    setLanguage(value);
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {templateSettings && (
@@ -360,15 +375,29 @@ const CreateReport = () => {
         <h1 className="text-3xl font-bold">
           {isEditing ? "Edit Report" : "Create New Report"}
         </h1>
-        <Button 
-          onClick={downloadReport} 
-          variant="outline" 
-          className="gap-2"
-          disabled={!form.formState.isValid}
-        >
-          <Download className="h-4 w-4" />
-          Download Report
-        </Button>
+        <div className="flex gap-4">
+          <Select
+            value={language}
+            onValueChange={(value: 'en' | 'my') => handleLanguageChange(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select Language" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="my">Bahasa Melayu</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            onClick={downloadReport} 
+            variant="outline" 
+            className="gap-2"
+            disabled={!form.formState.isValid}
+          >
+            <Download className="h-4 w-4" />
+            Download Report
+          </Button>
+        </div>
       </div>
       
       <div ref={reportRef}>
@@ -379,9 +408,9 @@ const CreateReport = () => {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title (Tajuk)</FormLabel>
+                  <FormLabel>{t.title}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter report title" {...field} />
+                    <Input placeholder={`Enter ${t.title.toLowerCase()}`} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -393,7 +422,7 @@ const CreateReport = () => {
                 name="date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel>{t.date}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -406,7 +435,7 @@ const CreateReport = () => {
                 name="time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Time</FormLabel>
+                    <FormLabel>{t.time}</FormLabel>
                     <FormControl>
                       <Input type="time" {...field} />
                     </FormControl>
@@ -420,9 +449,9 @@ const CreateReport = () => {
               name="venue"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Venue (Tempat)</FormLabel>
+                  <FormLabel>{t.venue}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter venue" {...field} />
+                    <Input placeholder={`Enter ${t.venue.toLowerCase()}`} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -433,9 +462,9 @@ const CreateReport = () => {
               name="organizer"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Organizer (Penganjur)</FormLabel>
+                  <FormLabel>{t.organizer}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter organizer" {...field} />
+                    <Input placeholder={`Enter ${t.organizer.toLowerCase()}`} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -446,10 +475,10 @@ const CreateReport = () => {
               name="attendance"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Attendance (Kehadiran)</FormLabel>
+                  <FormLabel>{t.attendance}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter attendance details"
+                      placeholder={`Enter ${t.attendance.toLowerCase()}`}
                       {...field}
                       rows={4}
                     />
@@ -463,10 +492,10 @@ const CreateReport = () => {
               name="impact"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Program Impact (Impak Program)</FormLabel>
+                  <FormLabel>{t.impact}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter program impact"
+                      placeholder={`Enter ${t.impact.toLowerCase()}`}
                       {...field}
                       rows={4}
                     />
@@ -480,10 +509,10 @@ const CreateReport = () => {
               name="summary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Program Summary (Rumusan Program)</FormLabel>
+                  <FormLabel>{t.summary}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter program summary"
+                      placeholder={`Enter ${t.summary.toLowerCase()}`}
                       {...field}
                       rows={6}
                     />
@@ -499,9 +528,9 @@ const CreateReport = () => {
                 name="teacher_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Teacher's Name</FormLabel>
+                    <FormLabel>{t.teacher_name}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter teacher's name" {...field} />
+                      <Input placeholder={`Enter ${t.teacher_name.toLowerCase()}`} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -512,9 +541,9 @@ const CreateReport = () => {
                 name="teacher_designation"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Teacher's Designation</FormLabel>
+                    <FormLabel>{t.teacher_designation}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter teacher's designation" {...field} />
+                      <Input placeholder={`Enter ${t.teacher_designation.toLowerCase()}`} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -523,7 +552,7 @@ const CreateReport = () => {
             </div>
 
             <div className="space-y-4">
-              <FormLabel>Images</FormLabel>
+              <FormLabel>{t.event_photos}</FormLabel>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {images.map((image, index) => (
                   <div key={index} className="relative group">

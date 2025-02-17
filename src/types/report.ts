@@ -1,6 +1,8 @@
 
 export interface Report {
-  id: string;
+  id?: string;
+  created_at?: string;
+  user_id: string;
   title: string;
   date: string;
   time: string;
@@ -9,9 +11,8 @@ export interface Report {
   attendance: string;
   impact: string;
   summary: string;
-  images: string[] | null;
-  user_id: string;
-  created_at: string;
+  images?: string[];
   teacher_name: string;
   teacher_designation: string;
+  language?: 'en' | 'my';
 }
