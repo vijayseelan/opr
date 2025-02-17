@@ -55,7 +55,7 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar variant="sidebar" collapsible="offcanvas">
+    <Sidebar variant="sidebar" collapsible="offcanvas" className="bg-white md:bg-sidebar">
       <SidebarRail />
       <SidebarContent className="flex-1">
         <SidebarGroup>
