@@ -19,6 +19,8 @@ export type Database = {
           impact: string
           organizer: string
           summary: string
+          teacher_designation: string
+          teacher_name: string
           time: string
           title: string
           user_id: string
@@ -33,6 +35,8 @@ export type Database = {
           impact: string
           organizer: string
           summary: string
+          teacher_designation: string
+          teacher_name: string
           time: string
           title: string
           user_id: string
@@ -47,6 +51,8 @@ export type Database = {
           impact?: string
           organizer?: string
           summary?: string
+          teacher_designation?: string
+          teacher_name?: string
           time?: string
           title?: string
           user_id?: string
