@@ -1,3 +1,4 @@
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -19,6 +20,7 @@ import html2pdf from "html2pdf.js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Report } from "@/types/report";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -31,14 +33,16 @@ const formSchema = z.object({
   summary: z.string().min(1, "Program summary is required"),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 const CreateReport = () => {
   const [images, setImages] = useState<string[]>([]);
   const reportRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { id } = useParams(); // Get the report ID from URL if editing
+  const { id } = useParams();
   const isEditing = Boolean(id);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
@@ -66,7 +70,7 @@ const CreateReport = () => {
         toast.error("Failed to fetch report");
         throw error;
       }
-      return data;
+      return data as Report;
     },
     enabled: isEditing,
   });
@@ -112,7 +116,7 @@ const CreateReport = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -121,26 +125,32 @@ const CreateReport = () => {
         return;
       }
 
-      const reportData = {
-        ...values,
-        images,
+      // Create a properly typed report data object
+      const reportData: Omit<Report, 'id' | 'created_at'> = {
+        title: values.title,
+        date: values.date,
+        time: values.time,
+        venue: values.venue,
+        organizer: values.organizer,
+        attendance: values.attendance,
+        impact: values.impact,
+        summary: values.summary,
+        images: images,
         user_id: user.id,
       };
 
       if (isEditing) {
-        // Update existing report
         const { error } = await supabase
           .from('reports')
           .update(reportData)
-          .eq('id', id);
+          .eq('id', id!);
 
         if (error) throw error;
         toast.success("Report updated successfully!");
       } else {
-        // Create new report
         const { error } = await supabase
           .from('reports')
-          .insert(reportData);
+          .insert([reportData]);
 
         if (error) throw error;
         toast.success("Report created successfully!");
