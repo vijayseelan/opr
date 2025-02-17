@@ -56,7 +56,7 @@ const CreateReport = () => {
     },
   });
 
-  const { data: report } = useQuery({
+  const { data: report, isError } = useQuery({
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
@@ -64,12 +64,19 @@ const CreateReport = () => {
         .from("reports")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         toast.error("Failed to fetch report");
         throw error;
       }
+      
+      if (!data) {
+        toast.error("Report not found");
+        navigate("/all-reports");
+        return null;
+      }
+      
       return data as Report;
     },
     enabled: isEditing,
