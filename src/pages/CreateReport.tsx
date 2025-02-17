@@ -1,3 +1,4 @@
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,6 +17,8 @@ import { toast } from "sonner";
 import { ImagePlus, Download } from "lucide-react";
 import { useState, useRef } from "react";
 import html2pdf from "html2pdf.js";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -31,6 +34,7 @@ const formSchema = z.object({
 const CreateReport = () => {
   const [images, setImages] = useState<string[]>([]);
   const reportRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,9 +73,33 @@ const CreateReport = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    toast.success("Report created successfully!");
-    console.log({ ...values, images });
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("You must be logged in to create a report");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('reports')
+        .insert([
+          {
+            ...values,
+            images,
+            user_id: user.id
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast.success("Report created successfully!");
+      navigate('/all-reports'); // Redirect to all reports page after successful creation
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create report");
+      console.error('Error creating report:', error);
+    }
   }
 
   const downloadReport = async () => {
