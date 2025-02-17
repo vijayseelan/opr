@@ -1,90 +1,46 @@
 
-import { LayoutDashboard, FileEdit, Files, LogOut } from "lucide-react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { FileEdit, Files, Home, Settings } from "lucide-react";
 
-const items = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Create Report",
-    url: "/create-report",
-    icon: FileEdit,
-  },
-  {
-    title: "All Reports",
-    url: "/all-reports",
-    icon: Files,
-  },
-];
-
-const AppSidebar = () => {
+export function AppSidebar() {
   const location = useLocation();
-  const navigate = useNavigate();
 
-  const handleSignOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      toast.success("Signed out successfully");
-      navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || "Failed to sign out");
-    }
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
+  const links = [
+    { href: "/", label: "Dashboard", icon: Home },
+    { href: "/create-report", label: "Create Report", icon: FileEdit },
+    { href: "/all-reports", label: "All Reports", icon: Files },
+    { href: "/template-settings", label: "Template Settings", icon: Settings },
+  ];
+
   return (
-    <Sidebar className="flex flex-col h-full">
-      <SidebarContent className="flex-1">
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    className={location.pathname === item.url ? "bg-accent" : ""}
-                    asChild
-                  >
-                    <Link to={item.url} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <div className="p-4 border-t border-sidebar-border">
-        <SidebarMenuButton
-          onClick={handleSignOut}
-          className="w-full text-red-500 hover:text-red-600"
-        >
-          <div className="flex items-center gap-2">
-            <LogOut className="h-4 w-4" />
-            <span>Sign Out</span>
+    <aside className="pb-12 min-h-screen">
+      <div className="space-y-4 py-4">
+        <div className="px-3 py-2">
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+            Menu
+          </h2>
+          <div className="space-y-1">
+            {links.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                to={href}
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors",
+                  isActive(href) ? "bg-accent" : "transparent"
+                )}
+              >
+                <Icon className="mr-2 h-4 w-4" />
+                {label}
+              </Link>
+            ))}
           </div>
-        </SidebarMenuButton>
+        </div>
       </div>
-    </Sidebar>
+    </aside>
   );
-};
-
-export default AppSidebar;
+}

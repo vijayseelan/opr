@@ -54,6 +54,54 @@ export type Database = {
         }
         Relationships: []
       }
+      template_settings: {
+        Row: {
+          additional_logos: string[] | null
+          created_at: string
+          custom_fields: Json | null
+          footer_text: string | null
+          header_text: string | null
+          id: string
+          language: string | null
+          primary_color: string | null
+          school_logo: string | null
+          school_name: string | null
+          secondary_color: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_logos?: string[] | null
+          created_at?: string
+          custom_fields?: Json | null
+          footer_text?: string | null
+          header_text?: string | null
+          id?: string
+          language?: string | null
+          primary_color?: string | null
+          school_logo?: string | null
+          school_name?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_logos?: string[] | null
+          created_at?: string
+          custom_fields?: Json | null
+          footer_text?: string | null
+          header_text?: string | null
+          id?: string
+          language?: string | null
+          primary_color?: string | null
+          school_logo?: string | null
+          school_name?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
