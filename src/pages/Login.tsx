@@ -37,6 +37,21 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error(error.message || "Failed to log in with Google");
+    }
+  };
+
   return (
     <AuroraBackground>
       <motion.div
@@ -85,6 +100,27 @@ const Login = () => {
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Logging in..." : "Log In"}
+          </Button>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white dark:bg-zinc-950 px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleGoogleLogin}
+            className="w-full"
+          >
+            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4 mr-2" />
+            Continue with Google
           </Button>
 
           <p className="text-center text-sm text-gray-600 dark:text-gray-300">
