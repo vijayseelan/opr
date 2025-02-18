@@ -1,30 +1,46 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileEdit, Files, CircleDot, CalendarDays, ArrowUpRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useReports } from "@/hooks/useReports";
 import { format } from "date-fns";
 import InteractiveBentoGallery from "@/components/ui/interactive-bento-gallery";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Report } from "@/types/report";
+import { toast } from "sonner";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { reports: initialReports, isLoading } = useReports();
   const [reports, setReports] = useState<Report[]>(initialReports);
 
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please login to access the dashboard");
+        navigate("/login");
+        return;
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+
+  // Subscribe to real-time changes
   useEffect(() => {
     setReports(initialReports);
   }, [initialReports]);
 
-  // Subscribe to real-time changes
   useEffect(() => {
     const channel = supabase
       .channel('reports-changes')
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to all events (insert, update, delete)
+          event: '*',
           schema: 'public',
           table: 'reports'
         },
