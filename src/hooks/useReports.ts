@@ -60,7 +60,7 @@ export const useReports = () => {
     getNextPageParam: (lastPage: PageData): number | undefined => lastPage.nextPage,
     initialPageParam: 0,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    cacheTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    gcTime: 30 * 60 * 1000, // Keep in garbage collection for 30 minutes (previously cacheTime)
   });
 
   const reports = data?.pages?.flatMap(page => page.reports) || [];
