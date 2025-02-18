@@ -69,9 +69,25 @@ const TemplateSettings = () => {
         school_logo: templateSettings.school_logo || "",
         additional_logos: templateSettings.additional_logos || [],
       });
-      // Parse custom fields from JSON if necessary
-      const fields = templateSettings.custom_fields as CustomField[] || [];
-      setCustomFields(fields);
+      
+      // Safely parse and validate custom fields from JSON
+      const rawFields = templateSettings.custom_fields as any[] || [];
+      const validFields = rawFields.filter((field): field is CustomField => {
+        return (
+          typeof field === 'object' &&
+          field !== null &&
+          'id' in field &&
+          'name' in field &&
+          typeof field.name === 'object' &&
+          'en' in field.name &&
+          'my' in field.name &&
+          'type' in field &&
+          'required' in field &&
+          'order' in field
+        );
+      });
+      
+      setCustomFields(validFields);
     }
   }, [templateSettings, form]);
 
