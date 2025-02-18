@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CustomField } from "@/types/template";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -40,6 +41,7 @@ const formSchema = z.object({
   summary: z.string().min(1, "Program summary is required"),
   teacher_name: z.string().min(1, "Teacher's name is required"),
   teacher_designation: z.string().min(1, "Teacher's designation is required"),
+  custom_field_values: z.record(z.string(), z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -73,6 +75,7 @@ const CreateReport = () => {
       summary: "",
       teacher_name: "",
       teacher_designation: "",
+      custom_field_values: {},
     },
   });
 
@@ -120,6 +123,24 @@ const CreateReport = () => {
         throw error;
       }
 
+      if (data) {
+        const rawFields = data.custom_fields as any[] || [];
+        data.custom_fields = rawFields.filter((field): field is CustomField => {
+          return (
+            typeof field === 'object' &&
+            field !== null &&
+            'id' in field &&
+            'name' in field &&
+            typeof field.name === 'object' &&
+            'en' in field.name &&
+            'my' in field.name &&
+            'type' in field &&
+            'required' in field &&
+            'order' in field
+          );
+        });
+      }
+
       return data;
     },
   });
@@ -146,6 +167,7 @@ const CreateReport = () => {
         summary: report.summary,
         teacher_name: report.teacher_name,
         teacher_designation: report.teacher_designation,
+        custom_field_values: report.custom_field_values || {},
       });
       if (report.images) {
         setImages(report.images);
@@ -192,7 +214,7 @@ const CreateReport = () => {
         return;
       }
 
-      const reportData: Omit<Report, 'id' | 'created_at'> = {
+      const reportData = {
         title: values.title,
         date: values.date,
         time: values.time,
@@ -205,7 +227,8 @@ const CreateReport = () => {
         teacher_designation: values.teacher_designation,
         images: images,
         user_id: user.id,
-        language: language
+        language: language,
+        custom_field_values: values.custom_field_values || {},
       };
 
       if (isEditing) {
@@ -357,6 +380,80 @@ const CreateReport = () => {
     } catch (error) {
       console.error('PDF generation error:', error);
       toast.error("Failed to generate PDF. Please try again.");
+    }
+  };
+
+  const renderCustomField = (field: CustomField) => {
+    const fieldName = language === 'en' ? field.name.en : field.name.my;
+    const value = form.watch(`custom_field_values.${field.id}`) || field.defaultValue || '';
+    
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      form.setValue(`custom_field_values.${field.id}`, e.target.value);
+    };
+
+    switch (field.type) {
+      case 'textarea':
+        return (
+          <FormItem key={field.id}>
+            <FormLabel>{fieldName}</FormLabel>
+            <FormControl>
+              <Textarea
+                value={value}
+                onChange={handleChange}
+                placeholder={getPlaceholder(fieldName)}
+                required={field.required}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      case 'date':
+        return (
+          <FormItem key={field.id}>
+            <FormLabel>{fieldName}</FormLabel>
+            <FormControl>
+              <Input
+                type="date"
+                value={value}
+                onChange={handleChange}
+                required={field.required}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      case 'number':
+        return (
+          <FormItem key={field.id}>
+            <FormLabel>{fieldName}</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                value={value}
+                onChange={handleChange}
+                placeholder={getPlaceholder(fieldName)}
+                required={field.required}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      default:
+        return (
+          <FormItem key={field.id}>
+            <FormLabel>{fieldName}</FormLabel>
+            <FormControl>
+              <Input
+                type="text"
+                value={value}
+                onChange={handleChange}
+                placeholder={getPlaceholder(fieldName)}
+                required={field.required}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
     }
   };
 
@@ -598,6 +695,15 @@ const CreateReport = () => {
                 </label>
               </div>
             </div>
+
+            {templateSettings?.custom_fields?.length > 0 && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold">Additional Information</h3>
+                {templateSettings.custom_fields
+                  .sort((a, b) => a.order - b.order)
+                  .map(renderCustomField)}
+              </div>
+            )}
 
             <Button 
               type="submit" 

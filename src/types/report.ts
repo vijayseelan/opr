@@ -15,4 +15,5 @@ export interface Report {
   teacher_name: string;
   teacher_designation: string;
   language: 'en' | 'my';
+  custom_field_values?: Record<string, string>;
 }
