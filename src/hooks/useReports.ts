@@ -1,3 +1,4 @@
+
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -6,11 +7,13 @@ import { Report } from "@/types/report";
 import { translations } from "@/utils/reportTranslations";
 
 const REPORTS_PER_PAGE = 9;
+const IMAGE_CACHE = new Map<string, ProcessedImage>();
 
 interface ProcessedImage {
   url: string;
   isPortrait: boolean;
   aspectRatio: number;
+  thumbnailUrl?: string;
 }
 
 interface PageData {
@@ -56,45 +59,63 @@ export const useReports = () => {
     },
     getNextPageParam: (lastPage: PageData): number | undefined => lastPage.nextPage,
     initialPageParam: 0,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    cacheTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
   });
 
   const reports = data?.pages?.flatMap(page => page.reports) || [];
 
-  const processImage = (url: string): Promise<ProcessedImage> => {
+  const processImage = async (url: string): Promise<ProcessedImage> => {
+    // Check cache first
+    if (IMAGE_CACHE.has(url)) {
+      return IMAGE_CACHE.get(url)!;
+    }
+
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
-        resolve({
+        const processedImage = {
           url,
           isPortrait: img.naturalHeight > img.naturalWidth,
           aspectRatio: img.naturalWidth / img.naturalHeight,
-        });
+          thumbnailUrl: url.replace(/\.(jpg|jpeg|png|gif)$/i, '_thumb.$1')
+        };
+        IMAGE_CACHE.set(url, processedImage);
+        resolve(processedImage);
       };
       img.onerror = () => {
-        resolve({
+        const defaultImage = {
           url,
           isPortrait: false,
           aspectRatio: 16/9,
-        });
+        };
+        IMAGE_CACHE.set(url, defaultImage);
+        resolve(defaultImage);
       };
-      img.src = `${url}?${new Date().getTime()}`;
+      // Remove timestamp query parameter to enable browser caching
+      img.src = url;
     });
   };
 
-  const generateImagesHtml = (images: ProcessedImage[], language: 'en' | 'my' = 'en') => {
+  const generateImagesHtml = (images: ProcessedImage[], language: 'en' | 'my' = 'en', forPdf: boolean = false) => {
     if (!images.length) return '';
 
     const t = translations[language];
     const portraitImages = images.filter(img => img.isPortrait);
     const landscapeImages = images.filter(img => !img.isPortrait);
 
+    const getImageUrl = (image: ProcessedImage) => {
+      return forPdf ? image.url : (image.thumbnailUrl || image.url);
+    };
+
     const portraitHtml = portraitImages.length ? `
       <div style="margin-bottom: 15px;">
         <div style="display: grid; grid-template-columns: repeat(${portraitImages.length <= 4 ? 2 : 3}, 1fr); gap: 15px;">
           ${portraitImages.map(image => `
             <div>
-              <img src="${image.url}" 
-                   style="width: 100%; height: 400px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+              <img src="${getImageUrl(image)}" 
+                   loading="lazy"
+                   style="width: 100%; height: ${forPdf ? '400px' : '300px'}; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
             </div>
           `).join('')}
         </div>
@@ -106,8 +127,9 @@ export const useReports = () => {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
           ${landscapeImages.map(image => `
             <div>
-              <img src="${image.url}" 
-                   style="width: 100%; height: 300px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+              <img src="${getImageUrl(image)}" 
+                   loading="lazy"
+                   style="width: 100%; height: ${forPdf ? '300px' : '200px'}; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
             </div>
           `).join('')}
         </div>
@@ -156,7 +178,7 @@ export const useReports = () => {
         </div>
       ` : '';
 
-      const imagesHtml = generateImagesHtml(processedImages, language);
+      const imagesHtml = generateImagesHtml(processedImages, language, true);
 
       const reportElement = document.createElement("div");
       reportElement.innerHTML = `
@@ -210,16 +232,17 @@ export const useReports = () => {
       const opt = {
         margin: [10, 10, 10, 10],
         filename: `${report.title || 'report'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg', quality: 0.85 }, // Reduced quality for PDF images
         html2canvas: { 
-          scale: 2,
+          scale: 1.5, // Reduced scale for better performance
           useCORS: true,
-          logging: true
+          logging: false // Disabled logging
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
-          orientation: 'portrait'
+          orientation: 'portrait',
+          compress: true // Enable PDF compression
         }
       };
 
