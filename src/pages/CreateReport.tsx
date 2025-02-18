@@ -116,7 +116,7 @@ const CreateReport = () => {
         .select("*")
         .eq("user_id", user.id)
         .eq("is_active", true)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
         toast.error("Failed to fetch template settings");
@@ -125,7 +125,7 @@ const CreateReport = () => {
 
       if (data) {
         const rawFields = data.custom_fields as any[] || [];
-        data.custom_fields = rawFields.filter((field): field is CustomField => {
+        const validFields = rawFields.filter((field): field is CustomField => {
           return (
             typeof field === 'object' &&
             field !== null &&
@@ -139,6 +139,11 @@ const CreateReport = () => {
             'order' in field
           );
         });
+        
+        return {
+          ...data,
+          custom_fields: validFields
+        };
       }
 
       return data;
@@ -696,10 +701,10 @@ const CreateReport = () => {
               </div>
             </div>
 
-            {templateSettings?.custom_fields?.length > 0 && (
+            {templateSettings?.custom_fields && templateSettings.custom_fields.length > 0 && (
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold">Additional Information</h3>
-                {templateSettings.custom_fields
+                {[...templateSettings.custom_fields]
                   .sort((a, b) => a.order - b.order)
                   .map(renderCustomField)}
               </div>
