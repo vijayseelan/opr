@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           attendance: string
           created_at: string
+          custom_field_values: Json | null
           date: string
           id: string
           images: string[] | null
@@ -30,6 +31,7 @@ export type Database = {
         Insert: {
           attendance: string
           created_at?: string
+          custom_field_values?: Json | null
           date: string
           id?: string
           images?: string[] | null
@@ -47,6 +49,7 @@ export type Database = {
         Update: {
           attendance?: string
           created_at?: string
+          custom_field_values?: Json | null
           date?: string
           id?: string
           images?: string[] | null

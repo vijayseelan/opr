@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -68,7 +69,9 @@ const TemplateSettings = () => {
         school_logo: templateSettings.school_logo || "",
         additional_logos: templateSettings.additional_logos || [],
       });
-      setCustomFields(templateSettings.custom_fields || []);
+      // Parse custom fields from JSON if necessary
+      const fields = templateSettings.custom_fields as CustomField[] || [];
+      setCustomFields(fields);
     }
   }, [templateSettings, form]);
 
@@ -112,6 +115,15 @@ const TemplateSettings = () => {
         return;
       }
 
+      // Convert customFields to a plain object for Supabase
+      const customFieldsData = customFields.map(field => ({
+        ...field,
+        name: {
+          en: field.name.en,
+          my: field.name.my
+        }
+      }));
+
       const { error } = await supabase
         .from("template_settings")
         .upsert({
@@ -119,8 +131,9 @@ const TemplateSettings = () => {
           school_name: values.school_name,
           school_logo: values.school_logo,
           additional_logos: values.additional_logos,
-          custom_fields: customFields,
+          custom_fields: customFieldsData,
           is_active: true,
+          name: values.school_name // Use school name as template name
         });
 
       if (error) throw error;
