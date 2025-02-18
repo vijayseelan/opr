@@ -146,7 +146,7 @@ const CreateReport = () => {
         };
       }
 
-      return data;
+      return null;
     },
   });
 
@@ -704,9 +704,10 @@ const CreateReport = () => {
             {templateSettings?.custom_fields && templateSettings.custom_fields.length > 0 && (
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold">Additional Information</h3>
-                {[...templateSettings.custom_fields]
-                  .sort((a, b) => a.order - b.order)
-                  .map(renderCustomField)}
+                {Array.isArray(templateSettings.custom_fields) && 
+                  [...templateSettings.custom_fields]
+                    .sort((a, b) => a.order - b.order)
+                    .map(renderCustomField)}
               </div>
             )}
 
