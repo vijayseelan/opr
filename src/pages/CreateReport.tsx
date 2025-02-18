@@ -47,6 +47,7 @@ type FormValues = z.infer<typeof formSchema>;
 const CreateReport = () => {
   const [images, setImages] = useState<string[]>([]);
   const [language, setLanguage] = useState<'en' | 'my'>('en');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { id } = useParams();
@@ -179,10 +180,14 @@ const CreateReport = () => {
   };
 
   const onSubmit = async (values: FormValues) => {
+    setIsSubmitting(true);
+    const loadingToast = toast.loading(isEditing ? "Updating report..." : "Creating report...");
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
+        toast.dismiss(loadingToast);
         toast.error("You must be logged in to create a report");
         return;
       }
@@ -210,6 +215,7 @@ const CreateReport = () => {
           .eq('id', id!);
 
         if (error) throw error;
+        toast.dismiss(loadingToast);
         toast.success("Report updated successfully!");
       } else {
         const { error } = await supabase
@@ -217,13 +223,17 @@ const CreateReport = () => {
           .insert([reportData]);
 
         if (error) throw error;
+        toast.dismiss(loadingToast);
         toast.success("Report created successfully!");
       }
 
       navigate('/all-reports');
     } catch (error: any) {
+      toast.dismiss(loadingToast);
       toast.error(error.message || `Failed to ${isEditing ? 'update' : 'create'} report`);
       console.error('Error with report:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -589,8 +599,16 @@ const CreateReport = () => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full">
-              {isEditing ? "Update Report" : "Create Report"}
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isSubmitting || !form.formState.isValid}
+            >
+              {isSubmitting ? (
+                isEditing ? "Updating Report..." : "Creating Report..."
+              ) : (
+                isEditing ? "Update Report" : "Create Report"
+              )}
             </Button>
           </form>
         </Form>
